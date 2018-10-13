@@ -1,0 +1,235 @@
+#!/bin/bash
+
+echo -e "\n"
+acount=`cat ~/.bashrc | grep "alias gitmanage=" | wc -l`
+
+if [ $acount -eq 0 ]
+   then
+   echo "Would you like to add an alias for gitmanage? (y/n)"
+   read ainput
+
+   if [ $ainput == "y" ] || [ $ainput == "Y" ]
+      then
+      DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+      DIR=$DIR"/gitmanage"
+      echo "alias gitmanage=\"bash $DIR\"" >> ~/.bashrc
+      echo "alias gm=gitmanage" >> ~/.bashrc
+      echo "->wrote alias gm and gitmanage to ~/.bashrc"
+   fi
+fi
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+DIR=$DIR"/gitmanage"
+
+if [ $# -gt 0 ]
+   then
+   
+   if [ $1 == "start" ]
+       then
+       git init
+       echo "->executed: git init"
+       echo -e "Please create a new remote repository if you haven't already" \
+       "at \n weww.github.com or www.bitbucket.org to use as your remote repo" \
+       "\n then use gitmanage setremoteurl [url] to setup the remote push repo."
+
+   fi
+
+   if [ $1 == "setremoteurl" ]
+      then
+      if [ $# -eq 2 ]
+         then
+         git remote add origin $2
+         echo "->executed: git remote add origin $2"
+         git remote -v
+         echo "->executed: git remote -v"
+      else
+         echo "The syntax is: gitmanage setremoteurl [https or .git url]"
+      fi
+   fi
+
+   if [ $1 == "setemail" ]
+      then
+      if [ $# -eq 2 ]
+         then
+         git config --global user.email "$2"
+         echo "->executed: git config --global user.email \"$2\""
+      else
+         echo "The syntax is: gitmanage setemail johndoe@testdom.com"
+      fi
+   fi
+
+     if [ $1 == "setname" ]
+      then
+      if [ $# -gt 1 ]
+         then
+         name=""
+         i=1
+         for var in $@;
+         do
+            if [ $i -gt 1 ]
+               then
+               name+=$var" "
+            fi
+            i=`expr $i + 1`
+         done
+
+         git config --global user.name "$name"
+         echo "->executed: git config --global user.name \"$name\""
+      fi
+   fi
+ 
+      
+   if [ $1 == "mergebranch" ]
+      then
+      if [ $# -eq 3 ]
+         then
+            current=`git branch | grep \* | cut -d ' ' -f2`
+            git checkout $3
+            echo "->executed: git checkout $3"
+            git merge $2
+            echo "->executed: git merge $2"
+            git checkout $current
+            echo "->returning back to original branch"
+         else
+            echo "Specify the branch name ex: gitmanage makebranch brsource" \
+            "brdest"
+      fi
+   fi
+
+   if [ $1 == "history" ]
+      then
+      if [ $# -eq 1 ]
+         then
+            git log
+            echo "->executed: git log"
+      fi
+   fi
+
+   if [ $1 == "changes" ]
+      then
+      if [ $# -eq 1 ]
+         then
+            git status
+            echo "->executed: git status"
+      fi
+   fi
+
+   if [ $1 == "listbranch" ]
+      then
+      if [ $# -eq 1 ]
+         then
+            git branch
+            echo "->executed: git branch"
+      fi
+   fi
+
+   if [ $1 == "switchbranch" ]
+      then
+      if [ $# -eq 2 ]
+         then
+            git checkout $2
+            echo "->executed: git checkout $2"
+         else
+            echo "Specify the branch name ex: gitmanage switchbranch branch1"
+      fi
+   fi
+
+   if [ $1 == "makebranch" ]
+      then
+      if [ $# -eq 2 ]
+         then
+            git branch $2
+            echo "->executed: git branch $2"
+         else
+            echo "Specify the branch name ex: gitmanage makebranch branch1"
+      fi
+   fi
+
+   if [ $1 == "pull" ]
+      then
+      echo -e "What is the name of the branch you wish to pull? \n" \
+           "\n (master is the main branch)"
+            
+      read bname
+            
+      git pull origin $bname
+
+      echo "->executed: git pull origin $bname"
+   fi
+
+
+   if [ $1 == "commitall" ]
+      then   
+        
+      if [ $# -gt 1 ]
+         then
+         comment=""
+         i=1
+         for var in $@;
+         do
+            if [ $i -gt 1 ]
+               then
+               comment+=$var" "
+            fi
+            i=`expr $i + 1`
+         done
+
+         git add *
+         git commit -m "$comment"
+
+         echo -e "->executed: git add *\n->executed: git commit -m \"$comment\""
+      else
+         echo -e "Please type your comment after git pushall" \
+         "\n ex: gitmanage pushall \"This is my first commit!\""
+      fi
+   fi
+   
+   if [ $1 == "pushall" ]
+      then   
+        
+      if [ $# -gt 1 ]
+         then
+         comment=""
+         i=1
+         for var in $@;
+         do
+            if [ $i -gt 1 ]
+               then
+               comment+=$var" "
+            fi
+            i=`expr $i + 1`
+         done
+
+         git add *
+         git commit -m "$comment"
+
+         echo -e "->executed: git add *\n->executed: git commit -m \"$comment\""
+         echo -e "\n\nWhat remote branch should this be pushed to?" \
+             "('master' is the default in most repos)"
+      
+         branch=""
+         read branch
+         echo "Please enter the password for your repository account:"
+         git push origin $branch
+         echo -e "->executed: git push origin $branch"
+      else
+         echo -e "Please type your comment after git pushall" \
+         "\n ex: gitmanage pushall \"This is my first commit!\""
+      fi
+   fi
+   else
+      echo -e "Usage:\n gitmanage start\tcreates a new repo" \
+          "\n gitmanage pushall [comment]\tadds, commits, pushes branch changes" \
+          "\n gitmanage commitall [comment]\tcommits all changes in branch" \
+          "\n gitmanage pull\t\tpulls changes from remote repo to local"\
+          "\n gitmanage makebranch [branchname]\tmakes new branch" \
+          "\n gitmanage switchbranch [branchname]\tswitch to branch" \
+          "\n gitmanage mergebranch [sourcebranch] [destbranch]\tmerge branches" \
+          "\n gitmanage listbranch\tlist available branches" \
+          "\n gitmanage changes\tshows changed files in current branch" \
+          "\n gitmanage history\tshows the commit history of current branch" \
+          "\n gitmanage setremoteurl [url]\tsets the remote repo url (push/pull)" \
+          "\n gitmanage setemail a@test.c\tsets remote repo login email address" \
+          "\n gitmanage setname john doe\tsets name for commits"
+         
+fi
