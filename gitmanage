@@ -180,7 +180,7 @@ if [ $# -gt 0 ]
          echo -e "->executed: git add *\n->executed: git commit -m \"$comment\""
       else
          echo -e "Please type your comment after git pushall" \
-         "\n ex: gitmanage pushall \"This is my first commit!\""
+         "\n ex: gitmanage commitall \"This is my first commit!\""
       fi
    fi
    
